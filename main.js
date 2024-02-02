@@ -1,3 +1,5 @@
+let code = { add: "+", subtract: "-" };
+
 function tokenizer(input) {
   let current = 0;
   let tokens = [];
@@ -79,8 +81,6 @@ function tokenizer(input) {
   return tokens;
 }
 
-let tokens = tokenizer("(add 2 (subtract 4 2))");
-
 function parser(tokens) {
   let current = 0;
 
@@ -139,4 +139,29 @@ function parser(tokens) {
 
   return ast;
 }
-parser(tokens);
+
+function codeGenerator(node) {
+  switch (node.type) {
+    case "Program":
+      let x = node.body.map(codeGenerator).join("\n");
+      return x;
+
+    case "CallExpression":
+      let parameters = node.params
+        .map(codeGenerator)
+        .join(" " + code[node.name] + " ");
+      return parameters;
+
+    case "NumberLiteral":
+      return node.value;
+
+    default:
+      throw new Error(`Tipo de nó não suportado: ${node.type}`);
+  }
+}
+
+let tokens = tokenizer("(add 2 (subtract 4 2))");
+let node = parser(tokens);
+let output = codeGenerator(node);
+
+console.log(output);
